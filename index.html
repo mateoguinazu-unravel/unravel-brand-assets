@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unravel Email Signature Generator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&display=swap');
+
+    :root {
+      --color-brand: #5239ED;
+      --color-brand-hover: #3D1EB8;
+      --color-brand-pressed: #36118E;
+      --color-brand-secondary: #FF7139;
+      --color-brand-subtlest: #ECEFFF;
+      --color-brand-subtle: #DDE2FF;
+      --color-text-primary: #111827;
+      --color-text-secondary: #374151;
+      --color-text-tertiary: #6B7280;
+      --color-text-on-brand: #FFFFFF;
+      --color-text-error: #B90E0E;
+      --color-text-brand: #5239ED;
+      --color-surface-default: #FFFFFF;
+      --color-border-default: #C4C8CF;
+      --color-border-subtle: #D1D5DB;
+      --color-border-brand: #5239ED;
+      --color-action-primary: #5239ED;
+      --color-action-primary-hover: #3D1EB8;
+      --color-action-primary-pressed: #36118E;
+      --radius-card: 12px;
+      --radius-button: 50px;
+      --radius-input: 50px;
+      --font-body: 'Albert Sans', Arial, sans-serif;
+      --elevation-1: 0px 1px 2px rgba(0,0,0,0.06), 0px 1px 3px rgba(0,0,0,0.10);
+      --elevation-3: 0px 4px 8px rgba(0,0,0,0.08), 0px 8px 16px rgba(0,0,0,0.10), 0px 2px 4px rgba(0,0,0,0.06);
+      --z-dropdown: 100;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f3f4f6; font-family: var(--font-body); padding: 32px 16px 64px; }
+
+    .page {
+      background: var(--color-brand-subtlest);
+      border-radius: 20px;
+      padding: 32px 24px 48px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h1 { font-size: 26px; font-weight: 700; color: var(--color-text-primary); letter-spacing: -0.02em; margin-bottom: 8px; line-height: 32px; }
+    .header h1 em { font-style: normal; color: var(--color-brand); }
+    .header p { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; max-width: 400px; margin: 0 auto; }
+
+    .card { background: var(--color-surface-default); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-card); padding: 24px; margin-bottom: 16px; box-shadow: var(--elevation-1); }
+    .card-label { font-size: 11px; font-weight: 600; color: var(--color-text-brand); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 16px; }
+
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label { display: block; font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 4px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    input[type="text"], input[type="email"], input[type="tel"] {
+      width: 100%; height: 44px; padding: 0 16px;
+      border: 1.5px solid var(--color-border-default);
+      border-radius: var(--radius-input);
+      background: var(--color-brand-subtlest);
+      color: var(--color-text-primary);
+      font-size: 14px; font-family: var(--font-body);
+      transition: border-color 200ms, box-shadow 200ms, background 200ms;
+    }
+    input[type="text"]:hover, input[type="email"]:hover, input[type="tel"]:hover { border-color: var(--color-border-brand); }
+    input:focus { outline: none; border-color: var(--color-border-brand); box-shadow: 0 0 0 3px rgba(82,57,237,0.14); background: var(--color-surface-default); }
+    input::placeholder { color: var(--color-text-tertiary); }
+
+    .upload-zone { border: 1.5px dashed var(--color-border-default); border-radius: var(--radius-card); padding: 24px; text-align: center; cursor: pointer; background: var(--color-brand-subtlest); transition: border-color 200ms, background 200ms; }
+    .upload-zone:hover { border-color: var(--color-border-brand); background: var(--color-brand-subtle); }
+    .upload-zone.has-image { border-style: solid; border-color: var(--color-border-brand); }
+    .upload-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--color-action-primary); color: #fff; font-size: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; }
+    .upload-text { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+    .upload-text strong { color: var(--color-brand); font-weight: 600; }
+    .upload-hint { font-size: 11px; color: var(--color-text-tertiary); margin-top: 6px; line-height: 1.4; }
+    .preview-img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-border-brand); display: block; margin: 0 auto 8px; }
+    .change-link { font-size: 12px; color: var(--color-text-brand); text-decoration: underline; cursor: pointer; }
+
+    .error-msg { font-size: 12px; color: var(--color-text-error); margin-top: 4px; display: none; }
+    .error-msg.show { display: block; }
+
+    .phone-row { display: flex; gap: 8px; align-items: center; }
+    .country-wrap { position: relative; flex-shrink: 0; }
+    .country-trigger { height: 44px; padding: 0 12px; min-width: 108px; border: 1.5px solid var(--color-border-default); border-radius: var(--radius-input); background: var(--color-brand-subtlest); color: var(--color-text-primary); font-size: 14px; font-family: var(--font-body); cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; transition: border-color 200ms; }
+    .country-trigger:hover { border-color: var(--color-border-brand); }
+    .c-arrow { font-size: 9px; color: var(--color-text-tertiary); margin-left: auto; }
+    .country-dropdown { display: none; position: absolute; top: 50px; left: 0; z-index: var(--z-dropdown); background: var(--color-surface-default); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-card); width: 264px; max-height: 240px; box-shadow: var(--elevation-3); overflow: hidden; flex-direction: column; }
+    .country-dropdown.open { display: flex; }
+    .country-search { padding: 8px 12px; border-bottom: 1px solid var(--color-border-subtle); }
+    .country-search input { height: 36px; border-radius: var(--radius-input); background: var(--color-brand-subtlest); border: 1px solid var(--color-border-default); padding: 0 12px; font-size: 13px; }
+    .country-search input:focus { outline: none; }
+    .country-list { overflow-y: auto; flex: 1; }
+    .country-item { padding: 8px 12px; font-size: 13px; cursor: pointer; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; transition: background 150ms; }
+    .country-item:hover { background: var(--color-brand-subtlest); }
+    .c-code { color: var(--color-text-tertiary); font-size: 12px; margin-left: auto; }
+
+    .preview-wrap { margin-bottom: 16px; }
+    .preview-label { font-size: 11px; font-weight: 600; color: var(--color-text-brand); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-brand-secondary); display: inline-block; }
+
+    .sig-outer { border-radius: 16px; overflow: hidden; background-color: #1E0B42; background-image: radial-gradient(circle at 105% 115%, #FFD467 0%, #FF9040 18%, #FF7139 28%, rgba(82,57,237,0.5) 50%, transparent 65%), radial-gradient(circle at 95% 100%, #FF7139 0%, rgba(82,57,237,0.7) 35%, transparent 60%), radial-gradient(circle at 0% 0%, #0D0520 0%, #1A0742 40%, transparent 70%), linear-gradient(135deg, #0D0520 0%, #2A0E6E 30%, #5239ED 70%, #5239ED 100%); padding: 28px; }
+    .sig-inner { display: flex; gap: 24px; align-items: flex-start; }
+    .sig-left { flex: 1; min-width: 0; }
+    .sig-right { width: 170px; flex-shrink: 0; }
+    .sig-person { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .sig-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #fff; flex-shrink: 0; overflow: hidden; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 28px; }
+    .sig-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .sig-name { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 5px; font-family: 'Albert Sans', Arial, sans-serif; }
+    .sig-designation { font-size: 15px; color: rgba(255,255,255,0.8); font-family: 'Albert Sans', Arial, sans-serif; }
+    .sig-contact { margin-bottom: 20px; }
+    .sig-contact a { display: block; font-size: 14px; color: #fff; text-decoration: none; font-family: 'Albert Sans', Arial, sans-serif; line-height: 1.8; }
+    .sig-logo { margin-bottom: 8px; }
+    .sig-logo img { width: 120px; height: auto; display: block; }
+    .sig-web { font-size: 14px; color: #fff; font-family: 'Albert Sans', Arial, sans-serif; }
+    .sig-badges { display: flex; flex-direction: column; gap: 8px; }
+    .sig-badges img { width: 170px; height: auto; border-radius: 14px; display: block; }
+
+    .instructions { background: var(--color-surface-default); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-card); padding: 20px 24px; margin-bottom: 16px; box-shadow: var(--elevation-1); }
+    .instructions-title { font-size: 13px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 14px; }
+    .steps { display: flex; flex-direction: column; gap: 10px; }
+    .step { display: flex; align-items: flex-start; gap: 12px; }
+    .step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--color-action-primary); color: var(--color-text-on-brand); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step-text { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
+    .step-text strong { color: var(--color-text-primary); font-weight: 600; }
+
+    .generate-btn { width: 100%; height: 52px; background: var(--color-action-primary); color: var(--color-text-on-brand); border: none; border-radius: var(--radius-button); font-family: var(--font-body); font-size: 16px; font-weight: 600; cursor: pointer; transition: background 200ms, transform 100ms, box-shadow 200ms; box-shadow: 0 4px 20px rgba(82,57,237,0.28); letter-spacing: 0.01em; }
+    .generate-btn:hover { background: var(--color-action-primary-hover); box-shadow: 0 6px 24px rgba(82,57,237,0.38); }
+    .generate-btn:active { background: var(--color-action-primary-pressed); transform: scale(0.98); }
+
+    #file-input { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <h1>Email <em>Signature</em> Generator</h1>
+    <p>Fill in your details. Your signature updates live. Click Generate when ready.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Your Details</div>
+    <div class="field">
+      <span class="field-label">Profile Photo</span>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <div id="upload-placeholder">
+          <div class="upload-icon">+</div>
+          <div class="upload-text"><strong>Click to upload</strong> your photo</div>
+          <div class="upload-hint">Any size or format — auto-compressed to fit Gmail's limits</div>
+        </div>
+        <div id="upload-preview" style="display:none;">
+          <img id="preview-img" class="preview-img" src="" alt="Preview" />
+          <div class="change-link">Change photo</div>
+        </div>
+      </div>
+      <div class="error-msg" id="err-photo">Please upload a photo.</div>
+      <input type="file" id="file-input" accept="image/*" />
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label class="field-label" for="inp-name">Full Name</label>
+        <input type="text" id="inp-name" placeholder="e.g. Sarah Johnson" />
+        <div class="error-msg" id="err-name">Please enter your name.</div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="inp-title">Designation</label>
+        <input type="text" id="inp-title" placeholder="e.g. Product Designer" />
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label class="field-label">Phone Number</label>
+        <div class="phone-row">
+          <div class="country-wrap" id="country-wrap">
+            <div class="country-trigger" onclick="toggleDropdown()">
+              <span id="flag-display">🇮🇳</span>
+              <span id="code-display">+91</span>
+              <span class="c-arrow">▼</span>
+            </div>
+            <div class="country-dropdown" id="country-dropdown">
+              <div class="country-search">
+                <input type="text" id="country-search-inp" placeholder="Search country..." oninput="filterCountries()" />
+              </div>
+              <div class="country-list" id="country-list"></div>
+            </div>
+          </div>
+          <input type="tel" id="inp-phone" placeholder="98654 56739" style="flex:1;" />
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="inp-email">Email Address</label>
+        <input type="email" id="inp-email" placeholder="name@unravelapp.com" />
+        <div class="error-msg" id="err-email">Please enter a valid email.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="preview-label"><span class="live-dot"></span> Live Preview</div>
+    <div class="sig-outer">
+      <div class="sig-inner">
+        <div class="sig-left">
+          <div class="sig-person">
+            <div class="sig-avatar" id="sig-avatar">?</div>
+            <div>
+              <div class="sig-name" id="sig-name">Name Surname</div>
+              <div class="sig-designation" id="sig-designation">Designation</div>
+            </div>
+          </div>
+          <div class="sig-contact">
+            <a id="sig-phone" href="#">+(91) 9865456739</a>
+            <a id="sig-email-disp" href="#">name@unravelapp.com</a>
+          </div>
+          <div class="sig-logo">
+            <img src="https://raw.githubusercontent.com/mateoguinazu-unravel/unravel-brand-assets/main/signature-logo.png" width="120" alt="Unravel" />
+          </div>
+          <div class="sig-web">www.unravelapp.com</div>
+        </div>
+        <div class="sig-right">
+          <div class="sig-badges">
+            <img src="https://raw.githubusercontent.com/mateoguinazu-unravel/unravel-brand-assets/488b33d5c20383d91fc933cad7bf4598a54e1d85/signature-img-03.png" alt="Apple Design Award" />
+            <img src="https://raw.githubusercontent.com/mateoguinazu-unravel/unravel-brand-assets/488b33d5c20383d91fc933cad7bf4598a54e1d85/signature-img-02.png" alt="Hot Travel Startups 2024" />
+            <img src="https://raw.githubusercontent.com/mateoguinazu-unravel/unravel-brand-assets/488b33d5c20383d91fc933cad7bf4598a54e1d85/signature-img-01.png" alt="Fastest Growing Travel Startup 2026" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="instructions">
+    <div class="instructions-title">How to install in Gmail</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>Click Generate Signature</strong> — it opens in a new tab.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Select all and copy</strong> — press <strong>Cmd+A</strong> then <strong>Cmd+C</strong> (Mac) or <strong>Ctrl+A / Ctrl+C</strong> (Windows).</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Paste into Gmail</strong> — Settings → See all settings → General → Signature → paste into the box → Save Changes.</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="generate-btn" onclick="handleGenerate()">Generate Signature →</button>
+</div>
+
+<script>
+  const COUNTRIES = [
+    { n: 'Afghanistan', f: '🇦🇫', c: '+93' }, { n: 'Albania', f: '🇦🇱', c: '+355' }, { n: 'Algeria', f: '🇩🇿', c: '+213' },
+    { n: 'Argentina', f: '🇦🇷', c: '+54' }, { n: 'Australia', f: '🇦🇺', c: '+61' }, { n: 'Austria', f: '🇦🇹', c: '+43' },
+    { n: 'Bangladesh', f: '🇧🇩', c: '+880' }, { n: 'Belgium', f: '🇧🇪', c: '+32' }, { n: 'Brazil', f: '🇧🇷', c: '+55' },
+    { n: 'Canada', f: '🇨🇦', c: '+1' }, { n: 'China', f: '🇨🇳', c: '+86' }, { n: 'Denmark', f: '🇩🇰', c: '+45' },
+    { n: 'Egypt', f: '🇪🇬', c: '+20' }, { n: 'Finland', f: '🇫🇮', c: '+358' }, { n: 'France', f: '🇫🇷', c: '+33' },
+    { n: 'Germany', f: '🇩🇪', c: '+49' }, { n: 'Ghana', f: '🇬🇭', c: '+233' }, { n: 'Greece', f: '🇬🇷', c: '+30' },
+    { n: 'Hong Kong', f: '🇭🇰', c: '+852' }, { n: 'India', f: '🇮🇳', c: '+91' }, { n: 'Indonesia', f: '🇮🇩', c: '+62' },
+    { n: 'Ireland', f: '🇮🇪', c: '+353' }, { n: 'Israel', f: '🇮🇱', c: '+972' }, { n: 'Italy', f: '🇮🇹', c: '+39' },
+    { n: 'Japan', f: '🇯🇵', c: '+81' }, { n: 'Jordan', f: '🇯🇴', c: '+962' }, { n: 'Kenya', f: '🇰🇪', c: '+254' },
+    { n: 'Kuwait', f: '🇰🇼', c: '+965' }, { n: 'Malaysia', f: '🇲🇾', c: '+60' }, { n: 'Mexico', f: '🇲🇽', c: '+52' },
+    { n: 'Moldova', f: '🇲🇩', c: '+373' }, { n: 'Morocco', f: '🇲🇦', c: '+212' }, { n: 'Netherlands', f: '🇳🇱', c: '+31' },
+    { n: 'New Zealand', f: '🇳🇿', c: '+64' }, { n: 'Nigeria', f: '🇳🇬', c: '+234' }, { n: 'Norway', f: '🇳🇴', c: '+47' },
+    { n: 'Oman', f: '🇴🇲', c: '+968' }, { n: 'Pakistan', f: '🇵🇰', c: '+92' }, { n: 'Philippines', f: '🇵🇭', c: '+63' },
+    { n: 'Poland', f: '🇵🇱', c: '+48' }, { n: 'Portugal', f: '🇵🇹', c: '+351' }, { n: 'Qatar', f: '🇶🇦', c: '+974' },
+    { n: 'Romania', f: '🇷🇴', c: '+40' }, { n: 'Russia', f: '🇷🇺', c: '+7' }, { n: 'Saudi Arabia', f: '🇸🇦', c: '+966' },
+    { n: 'Singapore', f: '🇸🇬', c: '+65' }, { n: 'South Africa', f: '🇿🇦', c: '+27' }, { n: 'South Korea', f: '🇰🇷', c: '+82' },
+    { n: 'Spain', f: '🇪🇸', c: '+34' }, { n: 'Sri Lanka', f: '🇱🇰', c: '+94' }, { n: 'Sweden', f: '🇸🇪', c: '+46' },
+    { n: 'Switzerland', f: '🇨🇭', c: '+41' }, { n: 'Taiwan', f: '🇹🇼', c: '+886' }, { n: 'Thailand', f: '🇹🇭', c: '+66' },
+    { n: 'Turkey', f: '🇹🇷', c: '+90' }, { n: 'UAE', f: '🇦🇪', c: '+971' }, { n: 'Ukraine', f: '🇺🇦', c: '+380' },
+    { n: 'United Kingdom', f: '🇬🇧', c: '+44' }, { n: 'United States', f: '🇺🇸', c: '+1' }, { n: 'Vietnam', f: '🇻🇳', c: '+84' },
+  ];
+
+  let selCode = '+91', imgB64 = '';
+
+  function renderCountries(list) {
+    document.getElementById('country-list').innerHTML = list.map(c =>
+      `<div class="country-item" onclick="selectCountry('${c.f}','${c.c}')"><span>${c.f}</span><span>${c.n}</span><span class="c-code">${c.c}</span></div>`
+    ).join('');
+  }
+  function filterCountries() {
+    const q = document.getElementById('country-search-inp').value.toLowerCase();
+    renderCountries(COUNTRIES.filter(c => c.n.toLowerCase().includes(q) || c.c.includes(q)));
+  }
+  function toggleDropdown() {
+    const dd = document.getElementById('country-dropdown');
+    dd.classList.toggle('open');
+    if (dd.classList.contains('open')) { document.getElementById('country-search-inp').focus(); renderCountries(COUNTRIES); }
+  }
+  function selectCountry(flag, code) {
+    selCode = code;
+    document.getElementById('flag-display').textContent = flag;
+    document.getElementById('code-display').textContent = code;
+    document.getElementById('country-dropdown').classList.remove('open');
+    updatePreview();
+  }
+  document.addEventListener('click', e => {
+    if (!document.getElementById('country-wrap').contains(e.target))
+      document.getElementById('country-dropdown').classList.remove('open');
+  });
+  renderCountries(COUNTRIES);
+
+  function compressImage(file, callback) {
+    const MAX_PX = 160, QUALITY = 0.72;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > MAX_PX) { h = Math.round(h * MAX_PX / w); w = MAX_PX; } }
+        else { if (h > MAX_PX) { w = Math.round(w * MAX_PX / h); h = MAX_PX; } }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL('image/jpeg', QUALITY));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('file-input').addEventListener('change', function(e) {
+    const file = e.target.files[0]; if (!file) return;
+    compressImage(file, function(compressed) {
+      imgB64 = compressed;
+      document.getElementById('preview-img').src = imgB64;
+      document.getElementById('upload-placeholder').style.display = 'none';
+      document.getElementById('upload-preview').style.display = 'block';
+      document.getElementById('upload-zone').classList.add('has-image');
+      document.getElementById('err-photo').classList.remove('show');
+      document.getElementById('sig-avatar').innerHTML = `<img src="${imgB64}" alt="Profile" />`;
+    });
+  });
+
+  function v(id) { return document.getElementById(id).value.trim(); }
+  ['inp-name', 'inp-title', 'inp-phone', 'inp-email'].forEach(id =>
+    document.getElementById(id).addEventListener('input', updatePreview));
+
+  function updatePreview() {
+    const name = v('inp-name'), title = v('inp-title'), phone = v('inp-phone'), email = v('inp-email');
+    const full = phone ? selCode + ' ' + phone : '';
+    document.getElementById('sig-name').textContent = name || 'Name Surname';
+    document.getElementById('sig-designation').textContent = title || 'Designation';
+    document.getElementById('sig-phone').textContent = full || '+(91) 9865456739';
+    document.getElementById('sig-phone').href = full ? 'tel:' + full.replace(/\s/g, '') : '#';
+    document.getElementById('sig-email-disp').textContent = email || 'name@unravelapp.com';
+    document.getElementById('sig-email-disp').href = email ? 'mailto:' + email : '#';
+  }
+
+  function handleGenerate() {
+    const name = v('inp-name'), title = v('inp-title'), phone = v('inp-phone'), email = v('inp-email');
+    const full = phone ? selCode + ' ' + phone : '';
+    let ok = true;
+    if (!imgB64) { document.getElementById('err-photo').classList.add('show'); ok = false; }
+    if (!name) { document.getElementById('err-name').classList.add('show'); ok = false; }
+    else document.getElementById('err-name').classList.remove('show');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('err-email').classList.add('show'); ok = false; }
+    else document.getElementById('err-email').classList.remove('show');
+    if (!ok) return;
+
+    // Store signature data in sessionStorage, then open signature.html in a new tab.
+    // Both pages are served from the same Netlify domain (https://), so sessionStorage
+    // is shared between them — no file:// cross-origin issues, works in all browsers.
+    sessionStorage.setItem('sig_data', JSON.stringify({ name, title, full, email, imgB64 }));
+    window.open('/signature.html', '_blank');
+  }
+</script>
+</body>
+</html>
